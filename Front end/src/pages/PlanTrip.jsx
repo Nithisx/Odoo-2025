@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
 const PlanTrip = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    placeName: '',
-    startDate: '',
-    endDate: '',
+    placeName: "",
+    startDate: "",
+    endDate: "",
     numberOfPeople: 1,
-    description: '',
+    description: "",
   });
 
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   // Fetch suggested places from backend
   useEffect(() => {
@@ -29,10 +30,10 @@ const PlanTrip = () => {
           const data = await res.json();
           setSuggestions(data.places || []);
         } else {
-          console.error('Failed to fetch suggestions');
+          console.error("Failed to fetch suggestions");
         }
       } catch (err) {
-        console.error('Error fetching suggestions:', err);
+        console.error("Error fetching suggestions:", err);
       } finally {
         setSuggestionsLoading(false);
       }
@@ -57,12 +58,12 @@ const PlanTrip = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       // Get user ID from localStorage or your auth system
-      const userId = localStorage.getItem('userId') || '';
+      const userId = localStorage.getItem("userId") || "";
 
       const tripData = {
         startDate: formData.startDate,
@@ -74,19 +75,25 @@ const PlanTrip = () => {
       };
 
       const res = await fetch(`${API_BASE_URL}/trip/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(tripData),
       });
 
       if (res.ok) {
-        navigate('/');
+        setSuccess(true);
+        // Show success animation for 2 seconds then navigate
+        setTimeout(() => {
+          navigate("/my-trips");
+        }, 2000);
       } else {
-        const data = await res.json();
-        setError(data.message || 'Failed to create trip');
+        const errorData = await res.json();
+        setError(
+          errorData.message || "Failed to create trip. Please try again."
+        );
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,7 +107,9 @@ const PlanTrip = () => {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Page Title */}
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">Create a new Trip</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-8">
+          Create a new Trip
+        </h2>
 
         {/* Error Message */}
         {error && (
@@ -110,7 +119,10 @@ const PlanTrip = () => {
         )}
 
         {/* Trip Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Place Name */}
             <div className="md:col-span-2">
@@ -207,7 +219,9 @@ const PlanTrip = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
             </div>
           ) : suggestions.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No suggestions available.</p>
+            <p className="text-gray-500 text-center py-8">
+              No suggestions available.
+            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {suggestions.map((place) => (
@@ -216,9 +230,11 @@ const PlanTrip = () => {
                   onClick={() => handleSelectPlace(place.name)}
                   className={`bg-white rounded-xl border overflow-hidden
                              hover:shadow-lg transition-all cursor-pointer
-                             ${formData.placeName === place.name 
-                               ? 'border-purple-500 ring-2 ring-purple-300' 
-                               : 'border-gray-200 hover:border-purple-300'}`}
+                             ${
+                               formData.placeName === place.name
+                                 ? "border-purple-500 ring-2 ring-purple-300"
+                                 : "border-gray-200 hover:border-purple-300"
+                             }`}
                 >
                   {/* Place Image */}
                   <div className="h-40 bg-gray-200">
@@ -233,8 +249,12 @@ const PlanTrip = () => {
 
                   {/* Card Content */}
                   <div className="p-4">
-                    <p className="text-base font-medium text-gray-800">{place.name}</p>
-                    <p className="text-sm text-gray-500 mt-1">{place.location}</p>
+                    <p className="text-base font-medium text-gray-800">
+                      {place.name}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {place.location}
+                    </p>
                     {place.description && (
                       <p className="text-xs text-gray-400 mt-2 line-clamp-2">
                         {place.description}
@@ -251,7 +271,7 @@ const PlanTrip = () => {
         <div className="flex justify-end gap-4 mt-8">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700
                        hover:bg-gray-50 font-medium transition-colors"
           >
@@ -265,10 +285,52 @@ const PlanTrip = () => {
                        rounded-lg font-medium shadow-md shadow-purple-300 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating...' : 'Create Trip'}
+            {loading ? "Creating..." : "Create Trip"}
           </button>
         </div>
       </main>
+
+      {/* Success Animation Modal */}
+      {success && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <svg
+                  className="w-8 h-8 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Trip Created Successfully!
+              </h3>
+              <p className="text-gray-600">
+                Your trip to {formData.placeName} has been created.
+              </p>
+              <div className="mt-4">
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full animate-pulse"
+                    style={{ width: "100%" }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Redirecting to My Trips...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

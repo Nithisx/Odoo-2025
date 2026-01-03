@@ -6,11 +6,9 @@ exports.createSections = async (req, res) => {
     const { tripId } = req.params;
     const sections = req.body;
     if (!tripId || !Array.isArray(sections) || sections.length === 0) {
-      return res
-        .status(400)
-        .json({
-          message: "tripId param and sections array in body are required.",
-        });
+      return res.status(400).json({
+        message: "tripId param and sections array in body are required.",
+      });
     }
     let tripObjectId;
     try {
@@ -18,6 +16,10 @@ exports.createSections = async (req, res) => {
     } catch (err) {
       return res.status(400).json({ message: "Invalid trip id format." });
     }
+
+    // Delete existing sections for this trip first
+    await ItinerarySection.deleteMany({ tripId: tripObjectId });
+
     const docs = sections.map((s) => ({
       tripId: tripObjectId,
       section: s.section,
@@ -25,6 +27,7 @@ exports.createSections = async (req, res) => {
       endDate: s.endDate,
       place: s.place,
       activities: s.activities,
+      budget: s.budget || 0,
       info: s.info || "",
     }));
     const inserted = await ItinerarySection.insertMany(docs);

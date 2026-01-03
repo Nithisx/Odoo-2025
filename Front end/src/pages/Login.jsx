@@ -27,6 +27,10 @@ const LoginPage = () => {
         body: JSON.stringify(formData),
       });
       if (res.status === 200) {
+        const data = await res.json();
+        if (data.userId) {
+          localStorage.setItem("userId", data.userId);
+        }
         navigate("/home");
       } else {
         const data = await res.json();
@@ -99,9 +103,7 @@ const LoginPage = () => {
             </div>
 
             {/* error message */}
-            {error && (
-              <div className="text-red-500 text-sm">{error}</div>
-            )}
+            {error && <div className="text-red-500 text-sm">{error}</div>}
 
             {/* remember + forgot */}
             <div className="flex items-center justify-between text-xs text-gray-500">

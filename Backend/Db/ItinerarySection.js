@@ -29,6 +29,10 @@ const itinerarySectionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    budget: {
+      type: Number,
+      default: 0,
+    },
     info: {
       type: String,
       default: "",
