@@ -3,8 +3,27 @@ const bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password, profilePic, firstName, lastName, phoneNumber, city, country } = req.body;
-    if (!username || !email || !password || !firstName || !lastName || !phoneNumber || !city || !country) {
+    const {
+      username,
+      email,
+      password,
+      profilePic,
+      firstName,
+      lastName,
+      phoneNumber,
+      city,
+      country,
+    } = req.body;
+    if (
+      !username ||
+      !email ||
+      !password ||
+      !firstName ||
+      !lastName ||
+      !phoneNumber ||
+      !city ||
+      !country
+    ) {
       return res.status(400).json({ message: "All fields are required." });
     }
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -16,12 +35,12 @@ exports.signup = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      profilePic: profilePic || '',
+      profilePic: profilePic || "",
       firstName,
       lastName,
       phoneNumber,
       city,
-      country
+      country,
     });
     await user.save();
     res.status(201).json({ message: "User registered successfully." });
