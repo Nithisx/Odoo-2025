@@ -1,0 +1,29 @@
+Auth:
+
+Base URL:
+http://localhost:3000/api/auth
+
+Endpoints:
+
+Signup
+POST /signup
+Body (JSON):
+{
+"username": "yourUsername",
+"email": "your@email.com",
+"password": "yourPassword",
+"profilePic": "url-or-base64", // optional, can be empty string
+"firstName": "First",
+"lastName": "Last",
+"phoneNumber": "1234567890",
+"city": "YourCity",
+"country": "YourCountry"
+}
+
+Login
+POST /login
+Body (JSON):
+{
+"email": "your@email.com",
+"password": "yourPassword"
+}
