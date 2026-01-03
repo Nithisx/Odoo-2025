@@ -17,7 +17,8 @@ Body (JSON):
 "lastName": "Last",
 "phoneNumber": "1234567890",
 "city": "YourCity",
-"country": "YourCountry"
+"country": "YourCountry",
+"role": "admin" // optional, set to 'admin' for admin user, otherwise defaults to 'user'
 }
 
 Login
@@ -27,3 +28,68 @@ Body (JSON):
 "email": "your@email.com",
 "password": "yourPassword"
 }
+
+Trips:
+
+POST /api/trip/create
+Body (JSON):
+{
+"startDate": "2026-01-10",
+"placeName": "Paris",
+"endDate": "2026-01-15",
+"numberOfPeople": 4,
+"description": "Family vacation", 
+"createdBy": "<user_id>" 
+}
+
+GET /api/trip/user/:userId
+Response:
+{
+"trips": [
+{
+"_id": "6958a0c9a37d2742913e4f6e",
+"startDate": "2026-01-10T00:00:00.000Z",
+"placeName": "Paris",
+"endDate": "2026-01-15T00:00:00.000Z",
+"numberOfPeople": 4,
+"description": "Family vacation",
+"createdBy": "69589c07f15f82826e52b6d0",
+"createdAt": "2026-01-03T04:53:29.293Z",
+"updatedAt": "2026-01-03T04:53:29.293Z",
+"__v": 0
+}
+]
+}
+
+Suggested Places:
+
+POST /api/suggested-place
+(Admin only)
+Body (JSON):
+{
+"name": "Place Name",
+"description": "Description of the place",
+"images": ["url1", "url2"],
+"location": "City, Country",
+"addedBy": "<admin_user_id>"
+}
+
+GET /api/suggested-place
+(All users)
+Response:
+{
+"places": [
+{
+"_id": "...",
+"name": "Place Name",
+"description": "...",
+"images": ["url1", "url2"],
+"location": "City, Country",
+"addedBy": { "_id": "...", "username": "admin", "role": "admin" },
+"createdAt": "...",
+"updatedAt": "..."
+}
+]
+}
+
+
