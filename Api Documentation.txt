@@ -61,6 +61,64 @@ Response:
 ]
 }
 
+GET /api/trip/user/:userId/:status
+- :userId — the user's MongoDB _id
+- :status — "ongoing", "upcoming", or "completed"
+- Query params (all optional):
+    - placeName: partial match (case-insensitive)
+    - minPeople: minimum number of people
+    - maxPeople: maximum number of people
+    - startDate: trips starting on/after this date (YYYY-MM-DD)
+    - endDate: trips ending on/before this date (YYYY-MM-DD)
+
+Example:
+GET /api/trip/user/1234567890abcdef12345678/ongoing?placeName=Paris&minPeople=2&maxPeople=5&startDate=2026-01-01&endDate=2026-01-31
+
+Response:
+{
+  "trips": [
+    {
+      "_id": "6958a0c9a37d2742913e4f6e",
+      "startDate": "2026-01-10T00:00:00.000Z",
+      "placeName": "Paris",
+      "endDate": "2026-01-15T00:00:00.000Z",
+      "numberOfPeople": 4,
+      "description": "Family vacation",
+      "createdBy": "69589c07f15f82826e52b6d0",
+      "createdAt": "2026-01-03T04:53:29.293Z",
+      "updatedAt": "2026-01-03T04:53:29.293Z",
+      "__v": 0
+    }
+  ]
+}
+
+Search Trips:
+
+GET /api/trip/search?userId=<userId>&q=<searchText>
+- userId (optional): filter by user
+- q (optional): search by place name (case-insensitive, partial match)
+
+Example:
+GET /api/trip/search?userId=1234567890abcdef12345678&q=paris
+
+Response:
+{
+  "trips": [
+    {
+      "_id": "6958a0c9a37d2742913e4f6e",
+      "startDate": "2026-01-10T00:00:00.000Z",
+      "placeName": "Paris",
+      "endDate": "2026-01-15T00:00:00.000Z",
+      "numberOfPeople": 4,
+      "description": "Family vacation",
+      "createdBy": "69589c07f15f82826e52b6d0",
+      "createdAt": "2026-01-03T04:53:29.293Z",
+      "updatedAt": "2026-01-03T04:53:29.293Z",
+      "__v": 0
+    }
+  ]
+}
+
 Suggested Places:
 
 POST /api/suggested-place
@@ -90,6 +148,46 @@ Response:
 "updatedAt": "..."
 }
 ]
+}
+
+Itinerary:
+
+POST /api/itinerary/create/:tripId
+Body (JSON):
+[
+  {
+    "section": 1,
+    "startDate": "2015-12-18",
+    "endDate": "2015-12-19",
+    "budget": 1000,
+    "place": "Paris Tower",
+    "activities": ["boating", "lunch"],
+    "info": "need to take care of baby"
+  },
+  {
+    "section": 2,
+    "startDate": "2015-12-20",
+    "endDate": "2015-12-21",
+    "budget": 1500,
+    "place": "Louvre Museum",
+    "activities": ["museum tour", "dinner"],
+    "info": "buy tickets in advance"
+  }
+]
+Response:
+{
+  "message": "Sections created successfully.",
+  "sections": [ { ... }, ... ]
+}
+
+GET /api/itinerary/trip/:tripId
+Response:
+{
+  "sections": [ { ... } ],
+  "totalBudget": 2500,
+  "totalPlaces": 2,
+  "totalActivities": 4,
+  "daysCovered": 4
 }
 
 

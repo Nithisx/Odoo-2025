@@ -9,6 +9,8 @@ const connectDB = require("./Db/connect");
 const authRoutes = require("./Routes/auth");
 const tripRoutes = require("./Routes/trip");
 const suggestedPlaceRoutes = require("./Routes/suggestedPlace");
+const userRoutes = require("./Routes/user");
+const itineraryRoutes = require("./Routes/itinerary");
 
 // Connect to MongoDB
 connectDB();
@@ -22,6 +24,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/trip", tripRoutes);
 // Suggested Place routes
 app.use("/api/suggested-place", suggestedPlaceRoutes);
+// User routes
+app.use("/api/user", userRoutes);
+// Itinerary routes
+app.use("/api/itinerary", itineraryRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
