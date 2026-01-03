@@ -1,193 +1,137 @@
-Auth:
+Travel Planner API Documentation
 
-Base URL:
-http://localhost:3000/api/auth
+Base URL
+http://localhost:3000/api
 
-Endpoints:
+===========================================
 
-Signup
-POST /signup
-Body (JSON):
+Authentication Endpoints
+
+POST /auth/signup
+Purpose: Register a new user account with profile information and optional admin role assignment.
+Body: { username, email, password, profilePic?, firstName, lastName, phoneNumber, city, country, role? }
+
+POST /auth/login
+Purpose: Authenticate user credentials and return user session data including userId.
+Body: { email, password }
+
+===========================================
+
+Trip Management Endpoints
+
+POST /trip/create
+Purpose: Create a new travel trip with destination, dates, group size, and description.
+Body: { startDate, placeName, endDate, numberOfPeople, description, createdBy }
+
+GET /trip/user/:userId
+Purpose: Retrieve all trips created by a specific user with complete trip details.
+Response: { trips: [{ _id, startDate, placeName, endDate, numberOfPeople, description, createdBy, createdAt, updatedAt }] }
+
+GET /trip/user/:userId/:status
+Purpose: Filter user trips by status (upcoming/ongoing/completed) with optional query parameters for advanced filtering.
+Parameters: :status (upcoming|ongoing|completed)
+Query Params: placeName, minPeople, maxPeople, startDate, endDate
+Response: { trips: [...] }
+
+GET /trip/search
+Purpose: Search trips by place name with optional user filtering for global or personal trip discovery.
+Query Params: userId?, q (search term)
+Response: { trips: [...] }
+
+===========================================
+
+Suggested Places Endpoints
+
+POST /suggested-place
+Purpose: Admin-only endpoint to add curated travel destinations with images and descriptions for user inspiration.
+Body: { name, description, images: [base64|urls], location, addedBy }
+Authorization: Admin role required
+
+GET /suggested-place
+Purpose: Retrieve all curated travel destinations available to inspire user trip planning.
+Response: { places: [{ _id, name, description, images, location, addedBy, createdAt, updatedAt }] }
+
+===========================================
+    
+Itinerary Management Endpoints
+
+POST /itinerary/create/:tripId
+Purpose: Create detailed daily itinerary sections for a trip including activities, budget, and logistics information.
+Body: [{ section, startDate, endDate, budget, place, activities: [], info }]
+Response: { message, sections: [...] }
+
+GET /itinerary/trip/:tripId
+Purpose: Retrieve complete itinerary for a trip with aggregated statistics including total budget and activity count.
+Response: { sections: [...], totalBudget, totalPlaces, totalActivities, daysCovered }
+
+===========================================
+
+User Profile Endpoints
+
+GET /user/profile/:userId
+Purpose: Get comprehensive user profile with personal information and categorized trips (upcoming/past).
+Response: { user: {...}, upcomingTrips: [...], pastTrips: [...] }
+
+PUT /user/update/:userId
+Purpose: Update user profile information including personal details and profile picture with validation.
+Body: { firstName, lastName, username, email, phoneNumber, city, country, profilePic }
+
+===========================================
+
+Community Endpoints
+
+GET /community
+Purpose: Retrieve all shared travel experiences and stories from the community for inspiration.
+Response: { messages: [{ _id, message, author, createdAt }] }
+
+POST /community
+Purpose: Share travel experiences and stories with the community to inspire other travelers.
+Body: { message, author }
+
+===========================================
+
+Calendar Endpoints
+
+GET /calendar/user/:userId
+Purpose: Get user's trip calendar data showing all trip dates for visual planning and conflict detection.
+Response: { tripDates: [{ date, tripId, placeName }] }
+
+===========================================
+
+Admin Dashboard Endpoints
+
+GET /admin/users
+Purpose: Admin-only endpoint to retrieve all registered users with statistics for user management.
+Authorization: Admin role required
+Response: { users: [...], totalUsers, activeUsers }
+
+GET /admin/analytics
+Purpose: Admin-only endpoint to get platform analytics including popular destinations and user activity metrics.
+Authorization: Admin role required
+Response: { popularCities: [...], popularActivities: [...], userStats: {...} }
+
+===========================================
+
+Response Format
+
+All endpoints return JSON responses with appropriate HTTP status codes:
+
+- 200: Success
+- 400: Bad Request (validation errors)
+- 401: Unauthorized
+- 403: Forbidden (insufficient permissions)
+- 404: Not Found
+- 500: Internal Server Error
+
+===========================================
+
+Error Handling
+
+Error responses follow the format:
+
 {
-"username": "yourUsername",
-"email": "your@email.com",
-"password": "yourPassword",
-"profilePic": "url-or-base64", // optional, can be empty string
-"firstName": "First",
-"lastName": "Last",
-"phoneNumber": "1234567890",
-"city": "YourCity",
-"country": "YourCountry",
-"role": "admin" // optional, set to 'admin' for admin user, otherwise defaults to 'user'
-}
-
-Login
-POST /login
-Body (JSON):
-{
-"email": "your@email.com",
-"password": "yourPassword"
-}
-
-Trips:
-
-POST /api/trip/create
-Body (JSON):
-{
-"startDate": "2026-01-10",
-"placeName": "Paris",
-"endDate": "2026-01-15",
-"numberOfPeople": 4,
-"description": "Family vacation", 
-"createdBy": "<user_id>" 
-}
-
-GET /api/trip/user/:userId
-Response:
-{
-"trips": [
-{
-"_id": "6958a0c9a37d2742913e4f6e",
-"startDate": "2026-01-10T00:00:00.000Z",
-"placeName": "Paris",
-"endDate": "2026-01-15T00:00:00.000Z",
-"numberOfPeople": 4,
-"description": "Family vacation",
-"createdBy": "69589c07f15f82826e52b6d0",
-"createdAt": "2026-01-03T04:53:29.293Z",
-"updatedAt": "2026-01-03T04:53:29.293Z",
-"__v": 0
-}
-]
-}
-
-GET /api/trip/user/:userId/:status
-- :userId — the user's MongoDB _id
-- :status — "ongoing", "upcoming", or "completed"
-- Query params (all optional):
-    - placeName: partial match (case-insensitive)
-    - minPeople: minimum number of people
-    - maxPeople: maximum number of people
-    - startDate: trips starting on/after this date (YYYY-MM-DD)
-    - endDate: trips ending on/before this date (YYYY-MM-DD)
-
-Example:
-GET /api/trip/user/1234567890abcdef12345678/ongoing?placeName=Paris&minPeople=2&maxPeople=5&startDate=2026-01-01&endDate=2026-01-31
-
-Response:
-{
-  "trips": [
-    {
-      "_id": "6958a0c9a37d2742913e4f6e",
-      "startDate": "2026-01-10T00:00:00.000Z",
-      "placeName": "Paris",
-      "endDate": "2026-01-15T00:00:00.000Z",
-      "numberOfPeople": 4,
-      "description": "Family vacation",
-      "createdBy": "69589c07f15f82826e52b6d0",
-      "createdAt": "2026-01-03T04:53:29.293Z",
-      "updatedAt": "2026-01-03T04:53:29.293Z",
-      "__v": 0
-    }
-  ]
-}
-
-Search Trips:
-
-GET /api/trip/search?userId=<userId>&q=<searchText>
-- userId (optional): filter by user
-- q (optional): search by place name (case-insensitive, partial match)
-
-Example:
-GET /api/trip/search?userId=1234567890abcdef12345678&q=paris
-
-Response:
-{
-  "trips": [
-    {
-      "_id": "6958a0c9a37d2742913e4f6e",
-      "startDate": "2026-01-10T00:00:00.000Z",
-      "placeName": "Paris",
-      "endDate": "2026-01-15T00:00:00.000Z",
-      "numberOfPeople": 4,
-      "description": "Family vacation",
-      "createdBy": "69589c07f15f82826e52b6d0",
-      "createdAt": "2026-01-03T04:53:29.293Z",
-      "updatedAt": "2026-01-03T04:53:29.293Z",
-      "__v": 0
-    }
-  ]
-}
-
-Suggested Places:
-
-POST /api/suggested-place
-(Admin only)
-Body (JSON):
-{
-"name": "Place Name",
-"description": "Description of the place",
-"images": ["url1", "url2"],
-"location": "City, Country",
-"addedBy": "<admin_user_id>"
-}
-
-GET /api/suggested-place
-(All users)
-Response:
-{
-"places": [
-{
-"_id": "...",
-"name": "Place Name",
-"description": "...",
-"images": ["url1", "url2"],
-"location": "City, Country",
-"addedBy": { "_id": "...", "username": "admin", "role": "admin" },
-"createdAt": "...",
-"updatedAt": "..."
-}
-]
-}
-
-Itinerary:
-
-POST /api/itinerary/create/:tripId
-Body (JSON):
-[
-  {
-    "section": 1,
-    "startDate": "2015-12-18",
-    "endDate": "2015-12-19",
-    "budget": 1000,
-    "place": "Paris Tower",
-    "activities": ["boating", "lunch"],
-    "info": "need to take care of baby"
-  },
-  {
-    "section": 2,
-    "startDate": "2015-12-20",
-    "endDate": "2015-12-21",
-    "budget": 1500,
-    "place": "Louvre Museum",
-    "activities": ["museum tour", "dinner"],
-    "info": "buy tickets in advance"
-  }
-]
-Response:
-{
-  "message": "Sections created successfully.",
-  "sections": [ { ... }, ... ]
-}
-
-GET /api/itinerary/trip/:tripId
-Response:
-{
-  "sections": [ { ... } ],
-  "totalBudget": 2500,
-  "totalPlaces": 2,
-  "totalActivities": 4,
-  "daysCovered": 4
+  "message": "Error description",
+  "errors": ["Detailed validation errors"] 
 }
 
 
