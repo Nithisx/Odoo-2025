@@ -13,6 +13,7 @@ exports.signup = async (req, res) => {
       phoneNumber,
       city,
       country,
+      role,
     } = req.body;
     if (
       !username ||
@@ -41,6 +42,7 @@ exports.signup = async (req, res) => {
       phoneNumber,
       city,
       country,
+      role: role === "admin" ? "admin" : "user",
     });
     await user.save();
     res.status(201).json({ message: "User registered successfully." });
